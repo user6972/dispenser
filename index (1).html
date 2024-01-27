@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeltaMath</title>
+</head>
+<body>
+    <h1>Link Dispenser </h1>
+    <p id="generatedLink">Click the button to generate a link</p>
+    <p id="cooldownTimer"></p>
+    
+    <!-- Button to generate a new link -->
+    <button onclick="generateLink()">Generate Link</button>
+
+    <script>
+        // Function to set a cookie with a specified name, value, and expiration time (in minutes)
+        function setCookie(name, value, minutes) {
+            var d = new Date();
+            d.setTime(d.getTime() + (minutes * 60 * 1000));
+            var expires = "expires=" + d.toUTCString();
+            document.cookie = name + "=" + value + ";" + expires + ";path=/";
+        }
+
+        // Function to get the value of a cookie by name
+        function getCookie(name) {
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var cookies = decodedCookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.indexOf(name + "=") === 0) {
+                    return cookie.substring(name.length + 1, cookie.length);
+                }
+            }
+            return "";
+        }
+
+      function generateLink() {
+          var lastGeneratedTime = parseInt(getCookie('lastGeneratedTime'));
+          var currentTime = Math.floor(Date.now() / 1000); // Convert milliseconds to seconds
+
+          // Get the list of past generated links from the cookies
+          var pastGeneratedLinks = [];
+          var index = 1;
+          var currentCookie = getCookie('generatedlink' + index);
+
+          while (currentCookie) {
+              pastGeneratedLinks.push(currentCookie);
+              index++;
+              currentCookie = getCookie('generatedlink' + index);
+          }
+
+          function makeRequest() {
+              var xhr = new XMLHttpRequest();
+              xhr.onreadystatechange = function () {
+                  if (xhr.readyState == 4 && xhr.status == 200) {
+                      var response = JSON.parse(xhr.responseText);
+                      console.log('New Link Generated:', response.link);
+
+                      // Check if the generated link is unique
+                      if (!pastGeneratedLinks.includes(response.link)) {
+                          // Save the link in a new cookie
+                          setCookie('generatedlink' + index, response.link, 8 * 60); // Set cookie for 8 hours
+
+                          // Display the numbered link to the user
+                          var generatedLinkText = 'Link #' + index + ': ' + response.link;
+                          document.getElementById('generatedLink').textContent = generatedLinkText;
+
+                          // Set the last generated time in the cookie
+                          setCookie('lastGeneratedTime', currentTime, 8 * 60); // Set cookie for 8 hours
+                          document.getElementById('cooldownTimer').textContent = 'Please do not share these links to help keep them unblocked, we dont have an infinite supply'; // Display additional text
+                      } else {
+                          // If the link is a duplicate, make another request
+                          makeRequest();
+                      }
+                  }
+              };
+              xhr.open('GET', 'https://77games.dev/linked1/links.php', true);
+              xhr.send();
+          }
+
+          if (isNaN(lastGeneratedTime) || (currentTime - lastGeneratedTime >= (8 * 60 * 60))) {
+              // Enough time has passed, generate a new link
+              makeRequest();
+          } else {
+              // Display the last generated link
+              var generatedLinkText = 'Last Generated Link: ' + pastGeneratedLinks[pastGeneratedLinks.length - 1];
+              console.log('Displaying Last Generated Link:', generatedLinkText);
+              document.getElementById('generatedLink').textContent = generatedLinkText;
+
+              // Calculate time remaining until next generation
+              var timeRemaining = (8 * 60 * 60) - (currentTime - lastGeneratedTime);
+              var hours = Math.floor(timeRemaining / 3600);
+              var minutes = Math.floor((timeRemaining % 3600) / 60);
+              var seconds = timeRemaining % 60;
+              document.getElementById('cooldownTimer').textContent = 'Cooldown before next link: ' + hours + 'h ' + minutes + 'm ' + seconds + 's';
+          }
+      }
+    </script>
+</body>
+</html>
