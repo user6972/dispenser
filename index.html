@@ -1,21 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DeltaMath</title>
+
+    <!-- Add link to particles.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.css">
+    <style>
+      body {
+          background-color: #000;
+          color: #00ff00; /* Green text */
+          font-family: 'Arial', sans-serif;
+          margin: 0;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100vh; /* Use the full height of the viewport */
+      }
+
+
+        h1, p {
+            margin: 20px;
+            text-align: center;
+        }
+
+        button {
+            margin: 20px;
+            padding: 10px 20px;
+            background-color: #00ff00; /* Green button */
+            color: #000;
+            border: none;
+            border-radius: 20px; /* Rounded button */
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #009900; /* Darker green on hover */
+        }
+
+        a {
+            color: #00ff00; /* Green link */
+            text-decoration: none;
+            display: block;
+            margin: 20px;
+            text-align: center;
+        }
+
+        a:hover {
+            color: #009900; /* Darker green on hover */
+        }
+
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Move particles.js to the background */
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Link Dispenser </h1>
+    <div id="particles-js"></div>
+
+    <h1>Link Dispenser</h1>
     <p id="generatedLink">Click the button to generate a link</p>
     <p id="cooldownTimer"></p>
-    
+
     <!-- Button to generate a new link -->
     <button onclick="generateLink()">Generate Link</button>
     <a href="https://forms.gle/q1Zf1aiXCGDZobi68" target="_blank">REPORT BLOCKED OR BROKEN LINK</a>
 
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
-        // Function to set a cookie with a specified name, value, and expiration time (in minutes)
+        particlesJS('particles-js', {
+            particles: {
+                number: {
+                    value: 80,
+                    density: {
+                        enable: true,
+                        value_area: 800
+                    }
+                },
+                color: {
+                    value: '#00ff00' // Green particles
+                },
+                shape: {
+                    type: 'circle',
+                    stroke: {
+                        width: 0,
+                        color: '#000000'
+                    },
+                    polygon: {
+                        nb_sides: 5
+                    },
+                    image: {
+                        src: 'img/github.svg',
+                        width: 100,
+                        height: 100
+                    }
+                },
+                opacity: {
+                    value: 0.5,
+                    random: false,
+                    anim: {
+                        enable: false,
+                        speed: 1,
+                        opacity_min: 0.1,
+                        sync: false
+                    }
+                },
+                size: {
+                    value: 3,
+                    random: true,
+                    anim: {
+                        enable: false,
+                        speed: 40,
+                        size_min: 0.1,
+                        sync: false
+                    }
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#00ff00', // Green lines
+                    opacity: 0.4,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 6,
+                    direction: 'none',
+                    random: false,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false,
+                    attract: {
+                        enable: false,
+                        rotateX: 600,
+                        rotateY: 1200
+                    }
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: 'repulse'
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: 'push'
+                    },
+                    resize: true
+                },
+                modes: {
+                    grab: {
+                        distance: 400,
+                        line_linked: {
+                            opacity: 1
+                        }
+                    },
+                    bubble: {
+                        distance: 400,
+                        size: 40,
+                        duration: 2,
+                        opacity: 8,
+                        speed: 3
+                    },
+                    repulse: {
+                        distance: 200,
+                        duration: 0.4
+                    },
+                    push: {
+                        particles_nb: 4
+                    },
+                    remove: {
+                        particles_nb: 2
+                    }
+                }
+            },
+            retina_detect: true
+        });
+
         function setCookie(name, value, minutes) {
             var d = new Date();
             d.setTime(d.getTime() + (minutes * 60 * 1000));
@@ -23,7 +194,6 @@
             document.cookie = name + "=" + value + ";" + expires + ";path=/";
         }
 
-        // Function to get the value of a cookie by name
         function getCookie(name) {
             var decodedCookie = decodeURIComponent(document.cookie);
             var cookies = decodedCookie.split(';');
@@ -35,14 +205,41 @@
             }
             return "";
         }
+      function copyToClipboard(link) {
+          var dummy = document.createElement("textarea");
+          document.body.appendChild(dummy);
+          dummy.value = link;
+          dummy.select();
+          document.execCommand("copy");
+          document.body.removeChild(dummy);
+          alert("Link copied to clipboard: " + link);
+      }
 
       function generateLink() {
-          var lastGeneratedTime = parseInt(getCookie('lastGeneratedTime'));
-          var currentTime = Math.floor(Date.now() / 1000); // Convert milliseconds to seconds
+          var index = 1; // Initialize the index within the function
 
-          // Get the list of past generated links from the cookies
+          function updateCountdown() {
+              var lastGeneratedTime = parseInt(getCookie('lastGeneratedTime'));
+              var currentTime = Math.floor(Date.now() / 1000);
+              var timeRemaining = (3 * 60 * 60) - (currentTime - lastGeneratedTime);
+
+              if (timeRemaining > 0) {
+                  var hours = Math.floor(timeRemaining / 3600);
+                  var minutes = Math.floor((timeRemaining % 3600) / 60);
+                  var seconds = timeRemaining % 60;
+                  document.getElementById('cooldownTimer').textContent = 'Cooldown before next link: ' + hours + 'h ' + minutes + 'm ' + seconds + 's';
+              } else {
+                  document.getElementById('cooldownTimer').textContent = '';
+                  clearInterval(countdownInterval);
+              }
+          }
+
+          var countdownInterval; // Declare the countdown interval variable
+
+          var lastGeneratedTime = parseInt(getCookie('lastGeneratedTime'));
+          var currentTime = Math.floor(Date.now() / 1000);
+
           var pastGeneratedLinks = [];
-          var index = 1;
           var currentCookie = getCookie('generatedlink' + index);
 
           while (currentCookie) {
@@ -58,20 +255,26 @@
                       var response = JSON.parse(xhr.responseText);
                       console.log('New Link Generated:', response.link);
 
-                      // Check if the generated link is unique
                       if (!pastGeneratedLinks.includes(response.link)) {
-                          // Save the link in a new cookie
-                          setCookie('generatedlink' + index, response.link, 8 * 60); // Set cookie for 8 hours
-
-                          // Display the numbered link to the user
+                          setCookie('generatedlink' + index, response.link, 3 * 60);
                           var generatedLinkText = 'Link #' + index + ': ' + response.link;
-                          document.getElementById('generatedLink').textContent = generatedLinkText;
 
-                          // Set the last generated time in the cookie
-                          setCookie('lastGeneratedTime', currentTime, 8 * 60); // Set cookie for 8 hours
-                          document.getElementById('cooldownTimer').textContent = 'Please do not share these links to help keep them unblocked, we dont have an infinite supply'; // Display additional text
+                          // Display the generated link and copy button
+                          document.getElementById('generatedLink').innerHTML = generatedLinkText +
+                              ' <button id="copyButton" onclick="copyToClipboard(\'' + response.link + '\')">Copy</button>';
+
+                          setCookie('lastGeneratedTime', currentTime, 8 * 60);
+                          document.getElementById('cooldownTimer').textContent = 'Please do not share these links to help keep them unblocked, we dont have an infinite supply';
+
+                          // Start or restart the countdown interval
+                          clearInterval(countdownInterval);
+                          countdownInterval = setInterval(updateCountdown, 1000);
+
+                          // Add event listener to the copy button
+                          document.getElementById('copyButton').addEventListener('click', function () {
+                              copyToClipboard(response.link);
+                          });
                       } else {
-                          // If the link is a duplicate, make another request
                           makeRequest();
                       }
                   }
@@ -80,23 +283,33 @@
               xhr.send();
           }
 
-          if (isNaN(lastGeneratedTime) || (currentTime - lastGeneratedTime >= (8 * 60 * 60))) {
-              // Enough time has passed, generate a new link
+          if (isNaN(lastGeneratedTime) || (currentTime - lastGeneratedTime >= (3 * 60 * 60))) {
               makeRequest();
           } else {
-              // Display the last generated link
               var generatedLinkText = 'Last Generated Link: ' + pastGeneratedLinks[pastGeneratedLinks.length - 1];
               console.log('Displaying Last Generated Link:', generatedLinkText);
-              document.getElementById('generatedLink').textContent = generatedLinkText;
+              document.getElementById('generatedLink').innerHTML = generatedLinkText +
+                  ' <button id="copyButton" onclick="copyToClipboard(\'' + pastGeneratedLinks[pastGeneratedLinks.length - 1] + '\')">Copy</button>';
 
-              // Calculate time remaining until next generation
-              var timeRemaining = (8 * 60 * 60) - (currentTime - lastGeneratedTime);
-              var hours = Math.floor(timeRemaining / 3600);
-              var minutes = Math.floor((timeRemaining % 3600) / 60);
-              var seconds = timeRemaining % 60;
-              document.getElementById('cooldownTimer').textContent = 'Cooldown before next link: ' + hours + 'h ' + minutes + 'm ' + seconds + 's';
+              updateCountdown(); // Update countdown immediately
+
+              var timeRemaining = (3 * 60 * 60) - (currentTime - lastGeneratedTime);
+              if (timeRemaining > 0) {
+                  // Start or restart the countdown interval
+                  clearInterval(countdownInterval);
+                  countdownInterval = setInterval(updateCountdown, 1000);
+              }
+
+              // Add event listener to the copy button
+              document.getElementById('copyButton').addEventListener('click', function () {
+                  copyToClipboard(pastGeneratedLinks[pastGeneratedLinks.length - 1]);
+              });
           }
       }
+
+
+
     </script>
 </body>
+
 </html>
